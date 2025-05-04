@@ -28,14 +28,18 @@ class AuthController extends Controller
             "password" => "required|string|confirmed"
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone_no' => $request->phone_no,
             'password' => Hash::make($request->password),
         ]);
+        $token = $user->createToken("myToken")->plainTextToken;
+
+        Mail::to($user)->send(new EmailVerification($user));
 
         return response()->json([
+            'token' => $token,
             "status" => true,
             "message" => "User Registered Successfully"
         ]);
@@ -96,29 +100,31 @@ class AuthController extends Controller
         ]);
     }
 
-    public function sendMail(){
+    public function sendMail()
+    {
         Mail::to(request()->user())->send(new EmailVerification(request()->user()));
 
         return response()->json([
-           "message" => 'Email verification link sent on your email' 
+            "message" => 'Email verification link sent on your email'
         ]);
     }
 
-    public function verify(){
+    public function verify()
+    {
 
-        if(!request()->user()->email_verified_at){
+        if (!request()->user()->email_verified_at) {
             request()->user()->forceFill([
                 'email_verified_at' => now()
             ])->save();
         }
-        return response()->json(["message" =>"Email Verified"]);
+        return response()->json(["message" => "Email Verified"]);
     }
 
     public function sendResetLinkEmail(LinkEmailRequest $request)
     {
         $url = URL::temporarySignedRoute('password.reset', now()
             ->addMinutes(30), ['email' => $request->email]);
-            
+
         $url = str_replace(env('APP_URL'), env('FRONTEND_URL'), $url);
 
         Mail::to($request->email)->send(new ResetPasswordLink($url));
