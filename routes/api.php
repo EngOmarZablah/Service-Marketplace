@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CustomRequestController;
+use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserShowController;
 use Illuminate\Http\Request;
@@ -21,3 +24,10 @@ Route::group(["middleware" => ["auth:sanctum"]], function () {
 
 Route::get('user', UserShowController::class);
 Route::get('dashboard', DashboardController::class);
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('category', CategoryController::class);
+    Route::resource('custom_request', CustomRequestController::class);
+    Route::resource('service', ServiceController::class);
+});
