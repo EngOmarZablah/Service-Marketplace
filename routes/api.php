@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CustomRequestController;
 use App\Http\Controllers\Api\ServiceController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserShowController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserShowController;
+use App\Http\Controllers\UserShowController as ControllersUserShowController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,3 +33,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('custom_request', CustomRequestController::class);
     Route::resource('service', ServiceController::class);
 });
+
+Route::middleware(['auth:sanctum', 'AdminMiddleware'])->get('/admin/users', [UserController::class, 'getAllUsers']);

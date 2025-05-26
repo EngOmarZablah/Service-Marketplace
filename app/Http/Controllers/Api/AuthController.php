@@ -25,7 +25,9 @@ class AuthController extends Controller
             "name" => "required|string",
             "email" => "required|email|unique:users",
             "phone_no" => "required|string|unique:users",
-            "password" => "required|string|confirmed"
+            "password" => "required|string|confirmed",
+            'role' => 'required',
+            'terms_accepted' => 'accepted',
         ]);
 
         $user = User::create([
@@ -33,16 +35,25 @@ class AuthController extends Controller
             'email' => $request->email,
             'phone_no' => $request->phone_no,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'status' => $request->role == 'provider' ? 'pending' : 'active',
+            'terms_accepted' => true,
+            'terms_accepted_at' => now(),
         ]);
+
         $token = $user->createToken("myToken")->plainTextToken;
 
         Mail::to($user)->send(new EmailVerification($user));
 
-        return response()->json([
-            'token' => $token,
-            "status" => true,
-            "message" => "User Registered Successfully"
-        ]);
+        if ($user->status == 'active') {
+            return response()->json([
+                'token' => $token,
+                "status" => true,
+                "message" => "User Registered Successfully"
+            ]);
+        } else return response()->json([
+            "message" => "Account created successfully. Your account is pending approval by the administrator."
+        ], 201);
     }
 
     public function login(Request $request)
@@ -56,6 +67,12 @@ class AuthController extends Controller
 
         if (!empty($user)) {
             if (Hash::check($request->password, $user->password)) {
+                if($user->status == "pending"){
+                    return response()->json(['error' => "Account not activated. Please wait for admin approval.", 403]);
+                }
+                if($user->status == "rejected"){
+                    return response()->json(['error' => "Your account has been rejected. Please contact support.", 403]);
+                }
                 $token = $user->createToken("myToken")->plainTextToken;
 
                 return response()->json(
