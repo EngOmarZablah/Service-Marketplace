@@ -9,7 +9,7 @@ class DashboardController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth:sanctum','verified']);
+        $this->middleware(['auth:sanctum','verified','CheckUserStatus']);
     }
     /**
      * Handle the incoming request.
@@ -17,7 +17,8 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         return response()->json([
-            "message" => 'Dashboard'
+            "message" => 'Dashboard',
+            "user" => $request->user()
         ]);
     }
 }

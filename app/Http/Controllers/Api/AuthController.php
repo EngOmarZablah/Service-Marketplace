@@ -8,7 +8,6 @@ use App\Http\Requests\ResetPasswordRequest;
 use App\Mail\EmailVerification;
 use App\Mail\ResetPasswordLink;
 use App\Models\User;
-use Illuminate\Foundation\Auth\User as AuthUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -41,9 +40,10 @@ class AuthController extends Controller
             'terms_accepted_at' => now(),
         ]);
 
+        Mail::to($user)->send(new EmailVerification($user));
         $token = $user->createToken("myToken")->plainTextToken;
 
-        Mail::to($user)->send(new EmailVerification($user));
+        
 
         if ($user->status == 'active') {
             return response()->json([
@@ -52,7 +52,8 @@ class AuthController extends Controller
                 "message" => "User Registered Successfully"
             ]);
         } else return response()->json([
-            "message" => "Account created successfully. Your account is pending approval by the administrator."
+            'token' => $token,
+            "message" => "Account created successfully.Please verify your email. Your account is pending approval by the administrator."
         ], 201);
     }
 

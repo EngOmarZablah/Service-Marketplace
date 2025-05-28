@@ -28,10 +28,13 @@ Route::get('user', UserShowController::class);
 Route::get('dashboard', DashboardController::class);
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'CheckUserStatus'])->group(function () {
     Route::resource('category', CategoryController::class);
     Route::resource('custom_request', CustomRequestController::class);
     Route::resource('service', ServiceController::class);
 });
 
-Route::middleware(['auth:sanctum', 'AdminMiddleware'])->get('/admin/users', [UserController::class, 'getAllUsers']);
+Route::middleware(['auth:sanctum', 'AdminMiddleware'])->group(function () {
+    Route::get('/admin/users', [UserController::class, 'getAllUsers']);
+    Route::post('/admin/update_status/{id}', [UserController::class, 'updateStatus']);
+});

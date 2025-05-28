@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('title');              
             $table->text('description');       
             $table->decimal('price', 8, 2);     
-            $table->integer('delivery_time');   
+            $table->integer('duration');   
             $table->enum('status', ['active', 'inactive', 'pending'])->default('pending');
             $table->timestamps();
         });
